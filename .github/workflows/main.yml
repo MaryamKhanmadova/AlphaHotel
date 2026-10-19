@@ -1,0 +1,36 @@
+name: Build and Publish .NET App
+
+on:
+  push:
+    branches: [ "main", "master" ] # Kod ana qola (main və ya master) push olunanda işləyəcək
+  workflow_dispatch: # İstədiyiniz vaxt düyməyə basıb əllə də işə sala bilərsiniz
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Kodları GitHub-dan serverə götürür
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. GitHub serverində .NET 8 SDK-nı hazır edir
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Əgər layihəniz .NET 7 və ya 6-dırsa, bura '7.0.x' və ya '6.0.x' yazın
+
+    # 3. Asılılıqları (NuGet paketlərini) bərpa edir
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # 4. Proyektinizi Publish edir
+    - name: Publish App
+      run: dotnet publish -c Release -o ./publish
+
+    # 5. Yaranan 'publish' qovluğunu ZIP şəklində yüklənə bilən fayl kimi saxlayır
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-published-app
+        path: ./publish
